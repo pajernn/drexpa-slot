@@ -799,9 +799,16 @@ clearTimeout(this.resetTimer);
 
 this.resetTimer = setTimeout(()=>{
 
-    this.resetGame();
+    if(
+        window.AppInventor &&
+        window.AppInventor.setWebViewString
+    ){
+        window.AppInventor.setWebViewString("BACK");
+    } else {
+        this.resetGame();
+    }
 
-},20000);
+},15000);
 }
 /*************************************************
  *
@@ -1240,15 +1247,7 @@ PrizeMachine.resetGame=function(){
         window.AppInventor.setWebViewString
     ){
 
-        window.AppInventor.setWebViewString(
-
-            JSON.stringify({
-
-                event:"NEW_CODE"
-
-            })
-
-        );
+        window.AppInventor.setWebViewString("BACK");
 
     }
 
