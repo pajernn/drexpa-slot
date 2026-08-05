@@ -1241,34 +1241,19 @@ PrizeMachine.resetGame=function(){
 }
 /*************************************************
  *
- * TESZT - KORSÓ DREHER
+ * APP INVENTOR INDÍTÁS
  *
  *************************************************/
 
-document.addEventListener("click",()=>{
+window.startSlot = function(prizeId){
 
-    if(PrizeMachine.initialized){
-
-        const randomIndex =
-            Math.floor(
-                Math.random() *
-                PrizeMachine.prizes.length
-            );
-
-        const randomPrize =
-            PrizeMachine.prizes[randomIndex];
-
-
-        console.log(
-            "Teszt nyertes:",
-            randomPrize.name
-        );
-
-
-        PrizeMachine.spin(
-            randomPrize.id
-        );
-
+    if(!PrizeMachine.initialized){
+        console.log("A nyerőgép még nem áll készen.");
+        return;
     }
 
-},{once:true});
+    console.log("App Inventor indítás:", prizeId);
+
+    PrizeMachine.spin(prizeId);
+
+};
