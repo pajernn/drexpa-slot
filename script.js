@@ -793,8 +793,13 @@ this.startConfetti();
         "Winner:",
         this.targetPrize
     );
-this.dom.gameButtons.style.display = "flex";
+this.dom.gameButtons.style.display = "none";
 
+setTimeout(() => {
+
+    this.dom.gameButtons.style.display = "flex";
+
+}, 3000);
 clearTimeout(this.resetTimer);
 
 this.resetTimer = setTimeout(()=>{
