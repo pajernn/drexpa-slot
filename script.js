@@ -936,6 +936,12 @@ window.addEventListener(
                 "PrizeMachine READY"
 
             );
+if(
+    window.AppInventor &&
+    window.AppInventor.setWebViewString
+){
+    window.AppInventor.setWebViewString("READY");
+}
 
         }
 
