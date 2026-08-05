@@ -1255,11 +1255,13 @@ window.startSlot = function(prizeId){
 
     if(!PrizeMachine.initialized){
         console.log("A nyerőgép még nem áll készen.");
-        return;
+        return false;
     }
 
     console.log("App Inventor indítás:", prizeId);
 
-    PrizeMachine.spin(prizeId);
+    PrizeMachine.spin(Number(prizeId));
+
+    return true;
 
 };
