@@ -1,0 +1,416 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    user-select:none;
+    -webkit-user-select:none;
+}
+
+body{
+
+    width:100vw;
+    height:100vh;
+
+    overflow:hidden;
+
+    background:#090909;
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:center;
+
+}
+
+/************************************************
+ LOGÓ
+************************************************/
+
+#logoContainer{
+
+    height:110px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    margin-top:10px;
+    margin-bottom:10px;
+
+}
+
+#logo{
+
+    height:90px;
+
+}
+
+/************************************************
+ SLOT
+************************************************/
+
+#slotContainer{
+
+    position:relative;
+
+    width:1180px;
+    height:260px;
+
+    overflow:hidden;
+
+    border-radius:20px;
+
+    background:#141414;
+
+    border:3px solid #292929;
+
+    box-shadow:
+        0 0 30px rgba(0,0,0,.8),
+        inset 0 0 25px rgba(255,255,255,.05);
+
+        z-index:1;
+
+}
+
+/************************************************
+ Futószalag
+************************************************/
+
+#slotTrack{
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    height:100%;
+
+    display:flex;
+    align-items:center;
+
+    gap:30px;
+
+    padding-left:40px;
+    padding-right:40px;
+
+}
+
+/************************************************
+ Nyerő keret
+************************************************/
+
+#centerFrame{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    width:220px;
+    height:220px;
+
+    border-radius:22px;
+
+    border:8px solid #9b00ff;
+
+    box-shadow:
+        0 0 15px #9b00ff,
+        0 0 35px #9b00ff,
+        0 0 60px #9b00ff;
+
+    pointer-events:none;
+
+}
+
+@keyframes pulseFrame{
+
+    0%{
+
+        box-shadow:
+        0 0 15px #9b00ff,
+        0 0 35px #9b00ff,
+        0 0 60px #9b00ff;
+
+    }
+
+
+    50%{
+
+        box-shadow:
+        0 0 30px #c000ff,
+        0 0 70px #c000ff,
+        0 0 120px #c000ff;
+
+    }
+
+
+    100%{
+
+        box-shadow:
+        0 0 15px #9b00ff,
+        0 0 35px #9b00ff,
+        0 0 60px #9b00ff;
+
+    }
+
+}
+
+/************************************************
+ Képek
+************************************************/
+
+.slotImage{
+
+    width:180px;
+    height:180px;
+
+    object-fit:contain;
+
+    border-radius:15px;
+
+    background:white;
+
+    padding:8px;
+
+}
+
+/************************************************
+ Eredmény
+************************************************/
+
+#result{
+
+    margin-top:30px;
+
+    text-align:center;
+
+    color:white;
+
+}
+
+#resultTitle{
+
+    font-size:44px;
+
+    font-weight:bold;
+
+    margin-bottom:15px;
+
+}
+
+#resultPrize{
+
+    font-size:34px;
+
+    color:#ffd700;
+
+}
+
+/************************************************
+ Konfetti
+************************************************/
+
+#confetti{
+
+    position:fixed;
+
+    left:0;
+    top:0;
+
+    width:100%;
+    height:100%;
+
+    pointer-events:none;
+
+    overflow:hidden;
+
+    z-index:9999;
+
+}
+#centerFrame.winner{
+
+    border-color:#39ff14;
+
+    animation: winnerPulse 0.8s infinite;
+
+}
+
+
+@keyframes winnerPulse{
+
+    0%{
+
+        box-shadow:
+        0 0 20px #39ff14,
+        0 0 50px #39ff14,
+        0 0 80px #39ff14;
+
+    }
+
+
+    50%{
+
+        box-shadow:
+        0 0 40px #00ff00,
+        0 0 100px #00ff00,
+        0 0 150px #00ff00;
+
+    }
+
+
+    100%{
+
+        box-shadow:
+        0 0 20px #39ff14,
+        0 0 50px #39ff14,
+        0 0 80px #39ff14;
+
+    }
+
+}
+/************************************************
+ NEM NYERT - PIROS PULZÁLÓ KERET
+************************************************/
+
+#centerFrame.fail{
+
+    border-color:#ff0000;
+
+    animation:failPulse 0.8s infinite;
+
+}
+
+
+@keyframes failPulse{
+
+    0%{
+
+        box-shadow:
+        0 0 20px #ff0000,
+        0 0 50px #ff0000,
+        0 0 80px #ff0000;
+
+    }
+
+
+    50%{
+
+        box-shadow:
+        0 0 40px #ff3333,
+        0 0 100px #ff0000,
+        0 0 150px #ff0000;
+
+    }
+
+
+    100%{
+
+        box-shadow:
+        0 0 20px #ff0000,
+        0 0 50px #ff0000,
+        0 0 80px #ff0000;
+
+    }
+
+}
+@keyframes confettiFall{
+
+    from{
+
+        transform:
+        translateY(0)
+        rotate(0deg);
+
+    }
+
+
+    to{
+
+        transform:
+        translateY(100vh)
+        rotate(720deg);
+
+    }
+
+}
+/************************************************
+ Új kód gomb
+************************************************/
+
+#gameButtons{
+
+    display:none;
+
+    justify-content:center;
+
+    margin-top:35px;
+
+    animation:buttonsAppear .35s ease;
+
+}
+
+#newCodeBtn{
+
+    min-width:280px;
+
+    height:75px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:linear-gradient(180deg,#2ea8ff,#0d74d1);
+
+    color:white;
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+        0 0 20px rgba(46,168,255,.8);
+
+}
+
+#newCodeBtn:hover{
+
+    transform:scale(1.05);
+
+    box-shadow:
+        0 0 35px rgba(46,168,255,1);
+
+}
+
+#newCodeBtn:active{
+
+    transform:scale(.97);
+
+}
+
+@keyframes buttonsAppear{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(25px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
