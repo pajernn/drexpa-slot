@@ -1118,8 +1118,16 @@ PrizeMachine.init = async function () {
 
     await this.preloadImages();
 
-    this.buildReel();
+   this.buildReel();
+
 this.dom.newCodeBtn.onclick = ()=>{
+
+    if(
+        window.AppInventor &&
+        window.AppInventor.setWebViewString
+    ){
+        window.AppInventor.setWebViewString("BACK");
+    }
 
     this.resetGame();
 
