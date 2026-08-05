@@ -1225,6 +1225,8 @@ PrizeMachine.startConfetti = function(){
 
 PrizeMachine.resetGame=function(){
 
+this.dom.slotContainer.style.opacity = "0";
+
     clearTimeout(this.resetTimer);
 
     this.dom.gameButtons.style.display="none";
@@ -1271,6 +1273,8 @@ window.startSlot = function(prizeId){
     }
 
     console.log("App Inventor indítás:", prizeId);
+
+    document.getElementById("slotContainer").style.opacity = "1";
 
     PrizeMachine.spin(Number(prizeId));
 
