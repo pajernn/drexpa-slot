@@ -1216,6 +1216,13 @@ PrizeMachine.startConfetti = function(){
  *************************************************/
 
 PrizeMachine.resetGame=function(){
+this.stop();
+
+this.currentPosition = 0;
+this.targetPosition = 0;
+this.targetPrize = null;
+
+this.updateTrack();
 
     clearTimeout(this.resetTimer);
 
