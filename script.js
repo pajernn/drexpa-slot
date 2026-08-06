@@ -271,7 +271,9 @@ PrizeMachine.animate=(time)=>{
 
     }
 
-    PrizeMachine.updateTrack();
+    PrizeMachine.normalize();
+
+PrizeMachine.updateTrack();
 
 
     PrizeMachine.animationFrame =
@@ -1224,8 +1226,6 @@ PrizeMachine.startConfetti = function(){
  *************************************************/
 
 PrizeMachine.resetGame=function(){
-
-this.dom.slotContainer.style.opacity = "0";
 
     clearTimeout(this.resetTimer);
 
