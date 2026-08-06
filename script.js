@@ -1113,6 +1113,7 @@ PrizeMachine.load = async function () {
  *************************************************/
 
 PrizeMachine.init = async function () {
+console.time("INIT");
 
     this.initDOM();
 
@@ -1140,6 +1141,7 @@ this.dom.newCodeBtn.onclick = ()=>{
     this.initialized = true;
 
     this.log("READY");
+console.timeEnd("INIT");
 
 };
 PrizeMachine.startConfetti = function(){
