@@ -289,15 +289,13 @@ PrizeMachine.updateTrack();
  *
  *************************************************/
 
-PrizeMachine.startAnimation=function(){
+PrizeMachine.startAnimation = function(){
 
-    this.spinning=true;
+    this.spinning = true;
+    this.lastFrame = 0;
 
-    this.lastFrame=0;
-
-    requestAnimationFrame(
-        this.animate
-    );
+    this.animationFrame =
+        requestAnimationFrame(this.animate);
 
 }
 
@@ -935,22 +933,17 @@ window.stopMachine=function(){
  *
  *************************************************/
 
-window.addEventListener(
+await PrizeMachine.init();
 
-    "load",
+console.log("PrizeMachine READY");
 
-    async()=>{
 
-        try{
+document.getElementById("slotContainer").style.opacity = "1";
 
-            await PrizeMachine.init();
+// TESZT
+// startSlot(1);
 
-            console.log(
-
-                "PrizeMachine READY"
-
-            );
-if(
+if (
     window.AppInventor &&
     window.AppInventor.setWebViewString
 ){
