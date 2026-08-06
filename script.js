@@ -1267,12 +1267,12 @@ this.dom.slotContainer.style.opacity = "0";
 
 window.startSlot = function(prizeId){
 
+    console.log("startSlot meghívva:", prizeId, typeof prizeId);
+
     if(!PrizeMachine.initialized){
         console.log("A nyerőgép még nem áll készen.");
         return false;
     }
-
-    console.log("App Inventor indítás:", prizeId);
 
     document.getElementById("slotContainer").style.opacity = "1";
 
