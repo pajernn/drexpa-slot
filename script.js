@@ -932,35 +932,32 @@ window.stopMachine=function(){
  * INIT
  *
  *************************************************/
+window.addEventListener("load", async () => {
 
-await PrizeMachine.init();
+    try {
 
-console.log("PrizeMachine READY");
+        await PrizeMachine.init();
 
+        console.log("PrizeMachine READY");
 
-document.getElementById("slotContainer").style.opacity = "1";
+        document.getElementById("slotContainer").style.opacity = "1";
 
-// TESZT
-// startSlot(1);
-
-if (
-    window.AppInventor &&
-    window.AppInventor.setWebViewString
-){
-    window.AppInventor.setWebViewString("READY");
-}
-
-        }
-
-        catch(e){
-
-            console.error(e);
-
+        if (
+            window.AppInventor &&
+            window.AppInventor.setWebViewString
+        ){
+            window.AppInventor.setWebViewString("READY");
         }
 
     }
 
-);
+    catch(e){
+
+        console.error(e);
+
+    }
+
+});
 /*************************************************
  *
  * SETTINGS MANAGER
