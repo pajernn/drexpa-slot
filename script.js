@@ -504,6 +504,7 @@ PrizeMachine.resetGame = function() {
         window.AppInventor.setWebViewString("BACK");
     }
 };
+
 /*******************************************************
  * KÓD BEKÜLDÉSE, ELLENŐRZÉSE ÉS HOMOKÓRA LOGIKA
  *******************************************************/
@@ -515,6 +516,9 @@ async function submitCode() {
   const msgEl = document.getElementById("codeMessage");
 
   if (!inputEl || !btnEl) return;
+
+  // ⚡ MOBIL BILLENTYŰZET BEZÁRÁSA
+  inputEl.blur();
 
   const code = inputEl.value.trim();
 

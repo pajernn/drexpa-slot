@@ -1,513 +1,168 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    user-select:none;
-    -webkit-user-select:none;
+/* ==========================================================================
+   1. GLOBÁLIS STÍLUSOK ÉS RESET
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body{
-
-    width:100vw;
-    height:100vh;
-
-    overflow:hidden;
-
-    background:#090909;
-
-    font-family:Arial,Helvetica,sans-serif;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
-    align-items:center;
-
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #0b0b12;
+  color: #ffffff;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/************************************************
- LOGÓ
-************************************************/
-
-#logoContainer{
-
-    height:110px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    margin-top:10px;
-    margin-bottom:10px;
-
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at 50% 30%, rgba(138, 43, 226, 0.2) 0%, rgba(11, 11, 18, 0.95) 70%);
+  z-index: -1;
+  pointer-events: none;
 }
 
-#logo{
-
-    height:90px;
-
-}
-
-/************************************************
- SLOT
-************************************************/
-
-#slotContainer{
-
-    opacity:0;
-
-    position:relative;
-
-    width:1180px;
-    height:260px;
-
-    overflow:hidden;
-
-    border-radius:20px;
-
-    background:#141414;
-
-    border:3px solid #292929;
-
-    box-shadow:
-        0 0 30px rgba(0,0,0,.8),
-        inset 0 0 25px rgba(255,255,255,.05);
-
-        z-index:1;
-
-}
-
-/************************************************
- Futószalag
-************************************************/
-
-#slotTrack{
-
-    position:absolute;
-
-    top:0;
-    left:0;
-
-    height:100%;
-
-    display:flex;
-    align-items:center;
-
-    gap:30px;
-
-    padding-left:40px;
-    padding-right:40px;
-
-}
-
-/************************************************
- Nyerő keret
-************************************************/
-
-#centerFrame{
-
-    position:absolute;
-
-    left:50%;
-    top:50%;
-
-    transform:translate(-50%,-50%);
-
-    width:220px;
-    height:220px;
-
-    border-radius:22px;
-
-    border:8px solid #9b00ff;
-
-    box-shadow:
-        0 0 15px #9b00ff,
-        0 0 35px #9b00ff,
-        0 0 60px #9b00ff;
-
-    pointer-events:none;
-
-}
-
-@keyframes pulseFrame{
-
-    0%{
-
-        box-shadow:
-        0 0 15px #9b00ff,
-        0 0 35px #9b00ff,
-        0 0 60px #9b00ff;
-
-    }
-
-
-    50%{
-
-        box-shadow:
-        0 0 30px #c000ff,
-        0 0 70px #c000ff,
-        0 0 120px #c000ff;
-
-    }
-
-
-    100%{
-
-        box-shadow:
-        0 0 15px #9b00ff,
-        0 0 35px #9b00ff,
-        0 0 60px #9b00ff;
-
-    }
-
-}
-
-/************************************************
- Képek
-************************************************/
-
-.slotImage{
-
-    width:180px;
-    height:180px;
-
-    object-fit:contain;
-
-    border-radius:15px;
-
-    background:white;
-
-    padding:8px;
-
-}
-
-/************************************************
- Eredmény
-************************************************/
-
-#result{
-
-    margin-top:30px;
-
-    text-align:center;
-
-    color:white;
-
-}
-
-#resultTitle{
-
-    font-size:44px;
-
-    font-weight:bold;
-
-    margin-bottom:15px;
-
-}
-
-#resultPrize{
-
-    font-size:34px;
-
-    color:#ffd700;
-
-}
-
-/************************************************
- Konfetti
-************************************************/
-
-#confetti{
-
-    position:fixed;
-
-    left:0;
-    top:0;
-
-    width:100%;
-    height:100%;
-
-    pointer-events:none;
-
-    overflow:hidden;
-
-    z-index:9999;
-
-}
-#centerFrame.winner{
-
-    border-color:#39ff14;
-
-    animation: winnerPulse 0.8s infinite;
-
-}
-
-
-@keyframes winnerPulse{
-
-    0%{
-
-        box-shadow:
-        0 0 20px #39ff14,
-        0 0 50px #39ff14,
-        0 0 80px #39ff14;
-
-    }
-
-
-    50%{
-
-        box-shadow:
-        0 0 40px #00ff00,
-        0 0 100px #00ff00,
-        0 0 150px #00ff00;
-
-    }
-
-
-    100%{
-
-        box-shadow:
-        0 0 20px #39ff14,
-        0 0 50px #39ff14,
-        0 0 80px #39ff14;
-
-    }
-
-}
-/************************************************
- NEM NYERT - PIROS PULZÁLÓ KERET
-************************************************/
-
-#centerFrame.fail{
-
-    border-color:#ff0000;
-
-    animation:failPulse 0.8s infinite;
-
-}
-
-
-@keyframes failPulse{
-
-    0%{
-
-        box-shadow:
-        0 0 20px #ff0000,
-        0 0 50px #ff0000,
-        0 0 80px #ff0000;
-
-    }
-
-
-    50%{
-
-        box-shadow:
-        0 0 40px #ff3333,
-        0 0 100px #ff0000,
-        0 0 150px #ff0000;
-
-    }
-
-
-    100%{
-
-        box-shadow:
-        0 0 20px #ff0000,
-        0 0 50px #ff0000,
-        0 0 80px #ff0000;
-
-    }
-
-}
-@keyframes confettiFall{
-
-    from{
-
-        transform:
-        translateY(0)
-        rotate(0deg);
-
-    }
-
-
-    to{
-
-        transform:
-        translateY(100vh)
-        rotate(720deg);
-
-    }
-
-}
-/************************************************
- Új kód gomb
-************************************************/
-
-#gameButtons{
-
-    display:none;
-
-    justify-content:center;
-
-    margin-top:35px;
-
-    animation:buttonsAppear .35s ease;
-
-}
-
-#newCodeBtn{
-
-    min-width:280px;
-
-    height:75px;
-
-    border:none;
-
-    border-radius:18px;
-
-    background:linear-gradient(180deg,#2ea8ff,#0d74d1);
-
-    color:white;
-
-    font-size:30px;
-
-    font-weight:bold;
-
-    cursor:pointer;
-
-    transition:.25s;
-
-    box-shadow:
-        0 0 20px rgba(46,168,255,.8);
-
-}
-
-#newCodeBtn:hover{
-
-    transform:scale(1.05);
-
-    box-shadow:
-        0 0 35px rgba(46,168,255,1);
-
-}
-
-#newCodeBtn:active{
-
-    transform:scale(.97);
-
-}
-
-@keyframes buttonsAppear{
-
-    from{
-
-        opacity:0;
-
-        transform:translateY(25px);
-
-    }
-
-    to{
-
-        opacity:1;
-
-        transform:translateY(0);
-
-    }
-
-}
-/* Kódbeíró container stílusok */
+/* ==========================================================================
+   2. KÓDBEÍRÓ FELÜLET (PROMÓCIÓS CONTAINER)
+   ========================================================================== */
 .code-container {
-  background: rgba(20, 20, 30, 0.9);
+  background: rgba(20, 20, 32, 0.92);
   border: 2px solid #8a2be2;
-  box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
-  border-radius: 15px;
-  padding: 20px;
+  box-shadow: 0 0 30px rgba(138, 43, 226, 0.4), inset 0 0 15px rgba(138, 43, 226, 0.2);
+  border-radius: 16px;
+  padding: 28px 22px;
   margin: 15px auto;
-  max-width: 400px;
+  width: 90%;
+  max-width: 420px;
   text-align: center;
-  transition: all 0.5s ease;
+  transition: all 0.4s ease-in-out;
+  backdrop-filter: blur(10px);
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 100;
 }
 
 .code-title {
-  color: #fff;
-  font-family: sans-serif;
-  font-size: 20px;
-  margin: 0 0 5px 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .code-subtitle {
-  color: #aaa;
-  font-size: 13px;
-  margin-bottom: 15px;
+  color: #bbbbdd;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+  font-weight: 400;
 }
 
 .input-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
+  align-items: center;
+  pointer-events: auto !important;
 }
 
 #codeInput {
   flex: 1;
-  padding: 12px 15px;
-  font-size: 18px;
-  font-weight: bold;
+  padding: 14px 16px;
+  font-size: 22px;
+  font-weight: 800;
   text-align: center;
-  text-transform: uppercase;
-  background: #111;
+  background: #080810;
   color: #00ffcc;
-  border: 1px solid #444;
-  border-radius: 8px;
+  border: 2px solid #333355;
+  border-radius: 10px;
   outline: none;
-  box-shadow: inset 0 0 5px rgba(0,255,204,0.2);
+  box-shadow: inset 0 0 8px rgba(0, 255, 204, 0.15);
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  touch-action: auto !important;
+  cursor: text !important;
 }
 
 #codeInput:focus {
   border-color: #00ffcc;
-  box-shadow: 0 0 10px rgba(0,255,204,0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.5), inset 0 0 5px rgba(0, 255, 204, 0.3);
+  background: #0d0d1a;
+}
+
+#codeInput::placeholder {
+  color: #444466;
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
 #spinBtn {
-  padding: 12px 20px;
+  padding: 14px 20px;
   font-size: 16px;
-  font-weight: bold;
-  color: #fff;
+  font-weight: 800;
+  color: #ffffff;
   background: linear-gradient(135deg, #8a2be2, #4a00e0);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-  transition: transform 0.1s ease, background 0.3s ease;
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 110px;
+  min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#spinBtn:hover {
+  background: linear-gradient(135deg, #9b3cf3, #5b00f5);
+  box-shadow: 0 0 22px rgba(138, 43, 226, 0.8);
 }
 
 #spinBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 #spinBtn:disabled {
-  background: #555;
+  background: #333344;
+  color: #888899;
   cursor: not-allowed;
   box-shadow: none;
+  border: 1px solid #444455;
 }
 
 .code-message {
-  margin-top: 12px;
+  margin-top: 16px;
   font-size: 14px;
-  font-weight: bold;
-  min-height: 20px;
+  font-weight: 700;
+  min-height: 22px;
+  letter-spacing: 0.5px;
 }
 
-/* Homokóra animáció */
+/* ==========================================================================
+   3. ANIMÁCIÓK ÉS TÖLTŐK (LOADERS)
+   ========================================================================== */
 .loader {
   display: inline-block;
   animation: spin 1s infinite linear;
+  margin-left: 6px;
+  font-size: 16px;
 }
 
 @keyframes spin {
@@ -515,12 +170,165 @@ body{
   100% { transform: rotate(360deg); }
 }
 
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-25px);
+  transition: all 0.5s ease;
+}
+
+/* ==========================================================================
+   4. NYERŐGÉP FŐ FELÜLET
+   ========================================================================== */
+.machine-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.result-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 22px;
+  text-align: center;
+  min-height: 36px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
+}
+
+/* ==========================================================================
+   5. TÁRCSA KERET ÉS KIEMELŐ DOBOZ (SLOT MACHINE WRAPPER)
+   ========================================================================== */
+.slot-wrapper {
+  position: relative;
+  width: 330px;
+  height: 165px;
+  background: radial-gradient(circle, #1a1a28 0%, #080810 100%);
+  border: 4px solid #8a2be2;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(138, 43, 226, 0.7), inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.slot-wrapper::before, .slot-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 25px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.slot-wrapper::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(11, 11, 18, 0.9), transparent);
+}
+
+.slot-wrapper::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(11, 11, 18, 0.9), transparent);
+}
+
+.highlight-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 145px;
+  border: 3.5px solid #00ffcc;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.7), inset 0 0 10px rgba(0, 255, 204, 0.3);
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 10px;
+  background: rgba(0, 255, 204, 0.03);
+}
+
+/* ==========================================================================
+   6. NYEREMÉNY SZALAG ÉS KÁRTYÁK
+   ========================================================================== */
+.slot-track {
+  display: flex;
+  position: absolute;
+  top: 12px;
+  left: 0;
+  height: 140px;
+  will-change: transform;
+}
+
+.prize-card {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.prize-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+}
+
+/* ==========================================================================
+   7. SEGÉDOSZTÁLYOK ÉS MIKRO-INTERAKCIÓK
+   ========================================================================== */
 .hidden {
   display: none !important;
 }
 
-.fade-out {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-20px);
+.visible {
+  display: flex !important;
+}
+
+/* Mobil reszponzivitás finomhangolása */
+@media (max-width: 480px) {
+  .code-container {
+    width: 92%;
+    padding: 22px 16px;
+  }
+
+  .code-title {
+    font-size: 19px;
+  }
+
+  #codeInput {
+    font-size: 19px;
+    padding: 12px 10px;
+  }
+
+  #spinBtn {
+    font-size: 14.5px;
+    padding: 12px 14px;
+    min-width: 105px;
+  }
+
+  .slot-wrapper {
+    width: 300px;
+    height: 150px;
+  }
+
+  .highlight-box {
+    width: 130px;
+    height: 135px;
+  }
+
+  .prize-card {
+    width: 130px;
+    height: 130px;
+  }
 }
