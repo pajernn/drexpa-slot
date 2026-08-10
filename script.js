@@ -578,7 +578,7 @@ async function useCode() {
   }
 }
 
-// Régi kompatibilitás miatt megtartjuk a submitCode nevet is
+// Régi/másik névvel való kompatibilitás
 const submitCode = useCode;
 
 // Űrlap alaphelyzetbe állítása hiba esetén
