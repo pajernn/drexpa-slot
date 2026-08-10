@@ -1,53 +1,39 @@
 <!DOCTYPE html>
 <html lang="hu">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Drexpa Nyereménygép</title>
-
-    <!-- Frissítettük a CSS verziót v=2-re a finomított stílus miatt -->
-    <link rel="stylesheet" href="style.css?v=2">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nyerőgép</title>
+  <link rel="stylesheet" href="style.css?v=2.7">
 </head>
-
 <body>
 
-    <!-- Konfetti -->
-    <div id="confetti"></div>
-
-    <!-- Logó -->
-    <div id="logoContainer">
-        <img id="logo" src="images/logo.png" alt="Drexpa">
+  <!-- KÓDBEÍRÓ CONTAINER (Neon stílus) -->
+  <div id="codeContainer" class="code-container">
+    <h2 class="code-title">PROMÓCIÓS JÁTÉK</h2>
+    <p class="code-subtitle">Írd be a blokkon található kódot!</p>
+    
+    <div class="input-wrapper">
+      <input type="text" id="codeInput" placeholder="A1B2C3" autocomplete="off" spellcheck="false" maxlength="20">
+      <button id="spinBtn" onclick="submitCode()">
+        <span id="btnText">PÖRGETÉS</span>
+        <span id="btnLoader" class="loader hidden">⏳</span>
+      </button>
     </div>
+    
+    <div id="codeMessage" class="code-message"></div>
+  </div>
 
-    <!-- Slot -->
-    <div id="slotContainer">
-
-        <!-- Futó képek -->
-        <div id="slotTrack"></div>
-
-        <!-- Középső keret -->
-        <div id="centerFrame"></div>
-
+  <!-- A NYERŐGÉP FELÜLETE -->
+  <div class="machine-container">
+    <div id="resultTitle" class="result-title"></div>
+    
+    <div class="slot-wrapper">
+      <div class="highlight-box"></div>
+      <div class="slot-track" id="slotTrack"></div>
     </div>
+  </div>
 
-    <!-- Eredmény -->
-    <div id="result">
-        <h1 id="resultTitle"></h1>
-        <h2 id="resultPrize"></h2>
-    </div>
-
-    <!-- Új kód gomb -->
-    <div id="gameButtons">
-        <button id="newCodeBtn">
-            🔄 Új kód
-        </button>
-    </div>
-
-    <!-- Frissítettük a JS verziót v=2.1-re a fizikai motor miatt -->
-    <script src="script.js?v=2.1"></script>
-
+  <script src="script.js?v=2.7"></script>
 </body>
-
 </html>

@@ -504,58 +504,99 @@ PrizeMachine.resetGame = function() {
         window.AppInventor.setWebViewString("BACK");
     }
 };
+/*******************************************************
+ * KÓD BEKÜLDÉSE, ELLENŐRZÉSE ÉS HOMOKÓRA LOGIKA
+ *******************************************************/
+async function submitCode() {
+  const inputEl = document.getElementById("codeInput");
+  const btnEl = document.getElementById("spinBtn");
+  const btnText = document.getElementById("btnText");
+  const btnLoader = document.getElementById("btnLoader");
+  const msgEl = document.getElementById("codeMessage");
 
-/*************************************************
- * ⚡ VILLÁMGYORS KÓD ELLENŐRZÉS & INDÍTÁS
- *************************************************/
-window.checkAndSpin = async function(inputCode) {
-    if (!PrizeMachine.initialized) {
-        console.error("Gép nincs kész.");
-        return;
+  if (!inputEl || !btnEl) return;
+
+  const code = inputEl.value.trim();
+
+  // 1. Üres kód ellenőrzése
+  if (!code) {
+    msgEl.style.color = "#ff4444";
+    msgEl.innerText = "Kérlek, írj be egy kódot!";
+    return;
+  }
+
+  // 2. Gomb zárolása + Homokóra animáció bekapcsolása
+  btnEl.disabled = true;
+  inputEl.disabled = true;
+  btnText.innerText = "Ellenőrzés ";
+  btnLoader.classList.remove("hidden");
+  msgEl.innerText = "";
+
+  try {
+    // 3. Gyors kérés a Google Apps Script felé
+    const response = await fetch(WEBAPP_URL + "?action=checkCode&code=" + encodeURIComponent(code));
+    const json = await response.json();
+
+    // 4. Sikeres válasz kezelése
+    if (json.status === "OK" && json.prizeId !== undefined) {
+      msgEl.style.color = "#00ffcc";
+      msgEl.innerText = "Sikeres kód! Pörgetés...";
+
+      // Kódbeíró ablak elhalványítása (fade-out)
+      setTimeout(() => {
+        const codeContainer = document.getElementById("codeContainer");
+        if (codeContainer) codeContainer.classList.add("fade-out");
+      }, 300);
+
+      // PÖRGETÉS INDÍTÁSA A KISORSOLT NYEREMÉNY ID-VAL
+      PrizeMachine.spin(json.prizeId);
+
+    } else {
+      // Érvénytelen vagy már felhasznált kód
+      msgEl.style.color = "#ff4444";
+      msgEl.innerText = json.message || "Érvénytelen kód!";
+      
+      resetForm();
     }
 
-    try {
-        PrizeMachine.dom.resultTitle.style.color = "#ffffff";
-        PrizeMachine.dom.resultTitle.innerHTML = "⏳ KÓD ELLENŐRZÉSE...";
+  } catch (err) {
+    console.error("Hiba az ellenőrzés során:", err);
+    msgEl.style.color = "#ff4444";
+    msgEl.innerText = "Hálózati hiba! Próbáld újra.";
 
-        // Gyors háttérkérés a Google Sheets API-hoz (~0.5 mp)
-        const res = await fetch(WEBAPP_URL + "?action=checkCode&code=" + encodeURIComponent(inputCode));
-        const json = await res.json();
+    resetForm();
+  }
+}
 
-        if (json.status === "OK" && json.prizeId !== undefined) {
-            PrizeMachine.dom.resultTitle.innerHTML = "";
-            PrizeMachine.spin(json.prizeId);
-        } else {
-            PrizeMachine.dom.resultTitle.style.color = "#ff4444";
-            PrizeMachine.dom.resultTitle.innerHTML = "❌ " + (json.message || "Érvénytelen kód!");
-            
-            if (window.AppInventor && window.AppInventor.setWebViewString) {
-                window.AppInventor.setWebViewString(JSON.stringify({ event: "error", message: json.message }));
-            }
-        }
-    } catch (err) {
-        console.error("Kód ellenőrzési hiba:", err);
-        PrizeMachine.dom.resultTitle.style.color = "#ff4444";
-        PrizeMachine.dom.resultTitle.innerHTML = "❌ Hálózati hiba!";
-    }
-};
+// Űrlap alaphelyzetbe állítása hiba esetén
+function resetForm() {
+  const inputEl = document.getElementById("codeInput");
+  const btnEl = document.getElementById("spinBtn");
+  const btnText = document.getElementById("btnText");
+  const btnLoader = document.getElementById("btnLoader");
 
-// MANUÁLIS TÁVOLI HÍVÁS
-window.startSlot = function(prizeId) {
-    if (!PrizeMachine.initialized) return false;
-    document.getElementById("slotContainer").style.opacity = "1";
-    PrizeMachine.spin(Number(prizeId));
-    return true;
-};
+  if (btnEl) btnEl.disabled = false;
+  if (inputEl) inputEl.disabled = false;
+  if (btnText) btnText.innerText = "PÖRGETÉS";
+  if (btnLoader) btnLoader.classList.add("hidden");
+}
 
-window.addEventListener("load", async () => {
-    try {
-        await PrizeMachine.init();
-        document.getElementById("slotContainer").style.opacity = "1";
-        if (window.AppInventor && window.AppInventor.setWebViewString) {
-            window.AppInventor.setWebViewString("READY");
-        }
-    } catch (e) {
-        console.error("Init Error:", e);
-    }
+/*******************************************************
+ * INICIALIZÁLÁS AZ OLDAL BETÖLTÉSEKOR
+ *******************************************************/
+document.addEventListener("DOMContentLoaded", () => {
+  // Gép indítása
+  if (typeof PrizeMachine !== "undefined" && PrizeMachine.init) {
+    PrizeMachine.init();
+  }
+
+  // ENTER gomb figyelése az input mezőben
+  const inputEl = document.getElementById("codeInput");
+  if (inputEl) {
+    inputEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        submitCode();
+      }
+    });
+  }
 });
