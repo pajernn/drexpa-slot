@@ -4,19 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Nyerőgép</title>
-  <link rel="stylesheet" href="style.css?v=3.0">
+  <link rel="stylesheet" href="style.css?v=3.1">
 </head>
 <body>
 
-  <!-- KÓDBEÍRÓ CONTAINER (Neon stílus) -->
+  <!-- KÓDBEÍRÓ CONTAINER -->
   <div id="codeContainer" class="code-container">
     <h2 class="code-title">PROMÓCIÓS JÁTÉK</h2>
     <p class="code-subtitle">Írd be a blokkon található számsort!</p>
     
     <div class="input-wrapper">
-      <!-- Numerikus billentyűzet és számos példa -->
-      <input type="text" id="codeInput" inputmode="numeric" pattern="[0-9]*" placeholder="123456" autocomplete="off" spellcheck="false" maxlength="15">
-      <button id="spinBtn" onclick="submitCode()">
+      <input type="text" id="codeInput" inputmode="text" placeholder="123456" autocomplete="off" spellcheck="false" maxlength="15">
+      <button id="spinBtn" type="button">
         <span id="btnText">PÖRGETÉS</span>
         <span id="btnLoader" class="loader hidden">⏳</span>
       </button>
@@ -25,16 +24,23 @@
     <div id="codeMessage" class="code-message"></div>
   </div>
 
-  <!-- A NYERŐGÉP FELÜLETE (Alapból rejtve) -->
+  <!-- A NYERŐGÉP FELÜLETE -->
   <div id="machineContainer" class="machine-container hidden">
     <div id="resultTitle" class="result-title"></div>
+    <div id="resultPrize" class="result-prize"></div>
     
-    <div class="slot-wrapper">
+    <div class="slot-wrapper" id="centerFrame">
       <div class="highlight-box"></div>
       <div class="slot-track" id="slotTrack"></div>
     </div>
+
+    <div id="gameButtons" class="game-buttons hidden">
+      <button id="newCodeBtn" type="button">ÚJ KÓD BEÍRÁSA</button>
+    </div>
   </div>
 
-  <script src="script.js?v=3.0"></script>
+  <div id="confetti" class="confetti-container"></div>
+
+  <script src="script.js?v=3.1"></script>
 </body>
 </html>

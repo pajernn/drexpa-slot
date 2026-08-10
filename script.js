@@ -1,29 +1,18 @@
 "use strict";
 
-/*******************************************************
- * KÓD BEKÜLDÉSE, ELLENŐRZÉSE ÉS BILLENTYŰZET KEZELÉS
- * (Globális deklaráció a hívási hibák elkerülésére)
- *******************************************************/
-window.useCode = async function() {
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxwyh1QIEsp1x4t3FjxfDI-FoBJDS4atEfR2-HKcxKbmzIzKlB6mglflHApzfEdY-PM/exec";
+
+// Kódellenőrzés és beküldés
+async function handleCodeSubmit() {
   const inputEl = document.getElementById("codeInput");
   const btnEl = document.getElementById("spinBtn");
   const btnText = document.getElementById("btnText");
   const btnLoader = document.getElementById("btnLoader");
   const msgEl = document.getElementById("codeMessage");
 
-  // ⚡ BILLENTYŰZET AZONNALI LECSUKÁSA MOBILON
-  if (inputEl) {
-    inputEl.blur();
-  }
-  if (document.activeElement) {
-    document.activeElement.blur();
-  }
-
   if (!inputEl) return;
-
   const code = inputEl.value.trim();
 
-  // 1. Üres kód ellenőrzése
   if (!code) {
     if (msgEl) {
       msgEl.style.color = "#ff4444";
@@ -32,7 +21,7 @@ window.useCode = async function() {
     return;
   }
 
-  // 2. Gomb zárolása + Töltés visszajelzés
+  // UI zárolás
   if (btnEl) btnEl.disabled = true;
   inputEl.disabled = true;
   if (btnText) btnText.innerText = "Ellenőrzés ";
@@ -40,7 +29,7 @@ window.useCode = async function() {
   if (msgEl) msgEl.innerText = "";
 
   try {
-    const response = await fetch(WEBAPP_URL + "?action=checkCode&code=" + encodeURIComponent(code));
+    const response = await fetch(`${WEBAPP_URL}?action=checkCode&code=${encodeURIComponent(code)}`);
     const json = await response.json();
 
     if (json.status === "OK" && json.prizeId !== undefined) {
@@ -50,11 +39,10 @@ window.useCode = async function() {
       }
 
       setTimeout(() => {
-        const codeContainer = document.getElementById("codeContainer");
-        if (codeContainer) codeContainer.classList.add("fade-out");
-      }, 300);
-
-      PrizeMachine.spin(json.prizeId);
+        document.getElementById("codeContainer").classList.add("hidden");
+        document.getElementById("machineContainer").classList.remove("hidden");
+        PrizeMachine.spin(json.prizeId);
+      }, 500);
 
     } else {
       if (msgEl) {
@@ -65,7 +53,7 @@ window.useCode = async function() {
     }
 
   } catch (err) {
-    console.error("Hiba az ellenőrzés során:", err);
+    console.error("Hiba:", err);
     if (msgEl) {
       msgEl.style.color = "#ff4444";
       msgEl.innerText = "Hálózati hiba! Próbáld újra.";
@@ -79,548 +67,187 @@ window.useCode = async function() {
     if (btnText) btnText.innerText = "PÖRGETÉS";
     if (btnLoader) btnLoader.classList.add("hidden");
   }
-};
+}
 
-window.submitCode = window.useCode;
-
+// Nyilvánossá tesszük a biztonság kedvéért
+window.useCode = handleCodeSubmit;
+window.submitCode = handleCodeSubmit;
 
 /*************************************************
- *
- * Drexpa Prize Machine Engine
- * Version 3.0 (Instant Code Check & Ultra Fast Spin)
- *
+ * PrizeMachine Engine
  *************************************************/
-
-const WEBAPP_URL =
-"https://script.google.com/macros/s/AKfycbxwyh1QIEsp1x4t3FjxfDI-FoBJDS4atEfR2-HKcxKbmzIzKlB6mglflHApzfEdY-PM/exec";
-
 const PrizeMachine = {
-    version: "3.0",
-    initialized: false,
-    spinning: false,
-    state: "IDLE",
-    animationFrame: null,
-    currentPosition: 0,
-    currentSpeed: 0,
-    targetPosition: 0,
-    targetPrize: null,
-    prizes: [],
-    settings: {},
-    images: new Map(),
-    dom: {},
-    callbacks: {},
-    resetTimer: null,
-};
+  initialized: false,
+  spinning: false,
+  state: 0,
+  currentPosition: 0,
+  targetPosition: 0,
+  targetPrize: null,
+  prizes: [],
+  settings: {},
+  dom: {},
 
-// HANGOK
-PrizeMachine.audio = {
+  audio: {
     spin: new Audio("sounds/spin.mp3"),
     winner: new Audio("sounds/winner.mp3"),
     fail: new Audio("sounds/fail.mp3")
-};
+  },
 
-/*************************************************
- * IMAGE MANAGER
- *************************************************/
-PrizeMachine.preloadImages = async function() {
-    this.log("Képek ellenőrzése...");
-    this.images.clear();
+  async init() {
+    this.dom.slotTrack = document.getElementById("slotTrack");
+    this.dom.resultTitle = document.getElementById("resultTitle");
+    this.dom.resultPrize = document.getElementById("resultPrize");
+    this.dom.gameButtons = document.getElementById("gameButtons");
 
-    for (const prize of this.prizes) {
-        this.images.set(prize.id, { src: prize.image });
+    try {
+      const res = await fetch(`${WEBAPP_URL}?action=init`);
+      const json = await res.json();
+      if (json.status === "OK") {
+        this.settings = json.data.settings;
+        this.prizes = json.data.prizes;
+        this.applySettings();
+        this.buildReel();
+        this.initialized = true;
+      }
+    } catch (e) {
+      console.error("Init hiba:", e);
     }
-    this.log(this.images.size, "kép előkészítve");
-};
+  },
 
-/*************************************************
- * REEL BUILDER
- *************************************************/
-PrizeMachine.clearTrack = function() {
-    if (this.dom.slotTrack) this.dom.slotTrack.innerHTML = "";
-};
+  applySettings() {
+    this.itemWidth = Number(this.settings.itemWidth || 180);
+    this.itemGap = Number(this.settings.itemGap || 30);
+    this.maxSpeed = Number(this.settings.maxSpeed || 40);
+    this.decelTime = Number(this.settings.deceleration || 3000);
+    this.spinDuration = (Number(this.settings.spinDuration) || 5) * 1000;
+  },
 
-PrizeMachine.createImage = function(prize) {
-    const img = document.createElement("img");
-    img.className = "slotImage";
-    const cached = this.images.get(prize.id);
-    if (cached) {
-        img.src = cached.src;
-    }
-    img.draggable = false;
-    img.alt = prize.name;
-    return img;
-};
-
-PrizeMachine.buildReel = function() {
-    this.clearTrack();
-
-    const repeat = Number(this.settings.repeatCount);
+  buildReel() {
+    if (!this.dom.slotTrack) return;
+    this.dom.slotTrack.innerHTML = "";
+    const repeat = 8;
 
     for (let r = 0; r < repeat; r++) {
-        for (const prize of this.prizes) {
-            const image = this.createImage(prize);
-            image.dataset.id = prize.id;
-            image.dataset.name = prize.name;
-            if (this.dom.slotTrack) this.dom.slotTrack.appendChild(image);
-        }
+      for (const prize of this.prizes) {
+        const img = document.createElement("img");
+        img.className = "slotImage";
+        img.src = prize.image;
+        img.alt = prize.name;
+        this.dom.slotTrack.appendChild(img);
+      }
     }
 
-    if (this.dom.slotTrack) {
-        this.totalItems = this.dom.slotTrack.children.length;
-        this.itemSize = Number(this.settings.itemWidth) + Number(this.settings.itemGap);
-        this.trackLength = this.itemSize * this.totalItems;
-        this.loopLength = this.itemSize * this.prizes.length;
-    }
-
-    this.currentPosition = 0;
+    this.itemSize = this.itemWidth + this.itemGap;
+    this.loopLength = this.itemSize * this.prizes.length;
     this.updateTrack();
+  },
 
-    this.log("Track:", this.totalItems, "elem");
-};
-
-/*************************************************
- * TRACK UPDATE
- *************************************************/
-PrizeMachine.updateTrack = function() {
-    if (!this.dom.slotTrack) return;
-    const drawPosition = this.currentPosition % this.loopLength;
-    this.dom.slotTrack.style.transform = `translate3d(${-drawPosition}px,0,0)`;
-};
-
-/*************************************************
- * LOOP ENGINE
- *************************************************/
-PrizeMachine.normalize = function() {
-    while (this.currentPosition >= this.loopLength) {
-        this.currentPosition -= this.loopLength;
+  updateTrack() {
+    if (this.dom.slotTrack) {
+      const drawPos = this.currentPosition % this.loopLength;
+      this.dom.slotTrack.style.transform = `translate3d(${-drawPos}px,0,0)`;
     }
-    while (this.currentPosition < 0) {
-        this.currentPosition += this.loopLength;
-    }
-};
+  },
 
-/*************************************************
- * ANIMATION
- *************************************************/
-PrizeMachine.animate = (time) => {
-    if (!PrizeMachine.spinning) {
-        PrizeMachine.animationFrame = null;
-        return;
-    }
+  spin(prizeId) {
+    if (!this.initialized) return;
+    this.targetPrize = this.prizes.find(p => Number(p.id) === Number(prizeId));
+    if (!this.targetPrize) return;
 
-    PrizeMachine.updateSpin(time);
-
-    if (PrizeMachine.state === PrizeMachine.STATE.FINISHED) {
-        PrizeMachine.finish();
-        return;
-    }
-
-    PrizeMachine.normalize();
-    PrizeMachine.updateTrack();
-
-    PrizeMachine.animationFrame = requestAnimationFrame(PrizeMachine.animate);
-};
-
-/*************************************************
- * START & STOP
- *************************************************/
-PrizeMachine.startAnimation = function() {
     this.spinning = true;
-    this.animationFrame = requestAnimationFrame(this.animate);
-};
-
-PrizeMachine.stopAnimation = function() {
-    this.spinning = false;
-    if (this.animationFrame) {
-        cancelAnimationFrame(this.animationFrame);
-    }
-};
-
-/*************************************************
- * SPIN ENGINE & STATES
- *************************************************/
-PrizeMachine.STATE = {
-    IDLE: 0,
-    ACCELERATING: 1,
-    FULL_SPEED: 2,
-    DECELERATING: 3,
-    FINISHED: 4
-};
-
-PrizeMachine.state = PrizeMachine.STATE.IDLE;
-
-PrizeMachine.setState = function(state) {
-    this.state = state;
-    this.log("STATE:", state);
-};
-
-PrizeMachine.canSpin = function() {
-    return this.state === this.STATE.IDLE;
-};
-
-PrizeMachine.spin = function(prizeId) {
-    if (!this.initialized) {
-        throw new Error("Motor nincs inicializálva.");
-    }
-
-    if (this.dom.centerFrame) {
-        this.dom.centerFrame.classList.remove("winner");
-        this.dom.centerFrame.classList.remove("fail");
-    }
-    if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "";
-    if (this.dom.resultPrize) this.dom.resultPrize.innerHTML = "";
-
-    const confetti = document.getElementById("confetti");
-    if (confetti) confetti.innerHTML = "";
-
-    clearTimeout(this.resetTimer);
-    if (this.dom.gameButtons) this.dom.gameButtons.style.display = "none";
-
-    if (!this.canSpin()) {
-        return Promise.reject("Már pörög.");
-    }
-
     this.audio.spin.currentTime = 0;
     this.audio.spin.loop = true;
     this.audio.spin.play().catch(() => {});
 
-    this.targetPrize = this.prizes.find(p => Number(p.id) === Number(prizeId));
+    const startTime = performance.now();
+    const startPos = this.currentPosition;
+    
+    // Pontos célpozíció kiszámítása a keret közepére (330px keretszélességgel)
+    const prizeIndex = this.prizes.findIndex(p => Number(p.id) === Number(prizeId));
+    const containerCenter = 330 / 2;
+    const itemCenter = (prizeIndex * this.itemSize) + (this.itemWidth / 2);
+    
+    // Szimulált pörgetési távolság
+    const targetOffset = itemCenter - containerCenter;
+    const extraLoops = 4 * this.loopLength;
+    this.targetPosition = startPos + extraLoops + targetOffset;
 
-    if (!this.targetPrize) {
-        throw new Error("Hibás Prize ID: " + prizeId);
-    }
+    const animate = (now) => {
+      const elapsed = now - startTime;
 
-    this.currentSpeed = 0;
-    this.startPosition = this.currentPosition;
-    this.spinStartTime = performance.now();
-    this.accelerationStart = performance.now();
-
-    this.setState(this.STATE.ACCELERATING);
-    this.startAnimation();
-
-    return new Promise(resolve => {
-        this.spinResolve = resolve;
-    });
-};
-
-PrizeMachine.updateSpin = function(time) {
-    switch (this.state) {
-        case this.STATE.ACCELERATING:
-            this.updateAcceleration(time);
-            break;
-        case this.STATE.FULL_SPEED:
-            this.updateFullSpeed(time);
-            break;
-        case this.STATE.DECELERATING:
-            this.updateDeceleration(time);
-            break;
-        case this.STATE.FINISHED:
-            this.finish();
-            break;
-    }
-};
-
-PrizeMachine.updateAcceleration = function(time) {
-    const elapsed = time - this.accelerationStart;
-    const accelTime = 300;
-    const progress = Math.min(1, elapsed / accelTime);
-
-    const eased = progress * progress;
-    this.currentSpeed = this.settings.maxSpeed * eased;
-    this.currentPosition += this.currentSpeed;
-
-    if (progress >= 1) {
-        this.currentSpeed = this.settings.maxSpeed;
-        this.setState(this.STATE.FULL_SPEED);
-    }
-};
-
-PrizeMachine.updateFullSpeed = function(time) {
-    this.currentPosition += this.settings.maxSpeed;
-
-    const totalElapsed = time - this.spinStartTime;
-    const targetDecelTime = Number(this.settings.deceleration);
-
-    if (totalElapsed >= (this.settings.spinDuration - targetDecelTime)) {
-        this.calculateTargetPosition();
-        this.decelerationStart = performance.now();
-        this.startPosition = this.currentPosition;
-        this.setState(this.STATE.DECELERATING);
-    }
-};
-
-PrizeMachine.updateDeceleration = function(time) {
-    const elapsed = time - this.decelerationStart;
-    const decelTime = Number(this.settings.deceleration);
-    const progress = Math.min(1, elapsed / decelTime);
-
-    const eased = 1 - Math.pow(1 - progress, 3);
-    this.currentPosition = this.startPosition + (this.targetPosition - this.startPosition) * eased;
-
-    if (progress >= 1) {
+      if (elapsed < this.spinDuration) {
+        const progress = elapsed / this.spinDuration;
+        // Easing funkció a lassuláshoz
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        this.currentPosition = startPos + (this.targetPosition - startPos) * easeOut;
+        this.updateTrack();
+        requestAnimationFrame(animate);
+      } else {
         this.currentPosition = this.targetPosition;
-        this.currentSpeed = 0;
-        this.setState(this.STATE.FINISHED);
-    }
-};
+        this.updateTrack();
+        this.finish();
+      }
+    };
 
-PrizeMachine.calculateTargetPosition = function() {
-    const itemWidth = Number(this.settings.itemWidth);
-    const itemGap = Number(this.settings.itemGap);
-    const itemSize = itemWidth + itemGap;
-    const loopLength = this.prizes.length * itemSize;
-    const containerCenter = 1180 / 2;
+    requestAnimationFrame(animate);
+  },
 
-    const estimatedDecelDistance = (this.settings.maxSpeed * (this.settings.deceleration / 16.6667)) * 0.45;
-    const estimatedStopPos = this.currentPosition + estimatedDecelDistance;
-
-    const indexes = [];
-    this.prizes.forEach((p, index) => {
-        if (Number(p.id) === Number(this.targetPrize.id)) {
-            indexes.push(index);
-        }
-    });
-
-    let bestPosition = null;
-    let minDiff = Number.MAX_SAFE_INTEGER;
-
-    indexes.forEach(index => {
-        const itemCenterOnTrack = (index * itemSize) + (itemWidth / 2) + 40;
-        let baseTarget = itemCenterOnTrack - containerCenter;
-
-        while (baseTarget < estimatedStopPos - (loopLength / 2)) {
-            baseTarget += loopLength;
-        }
-
-        const diff = Math.abs(baseTarget - estimatedStopPos);
-        if (diff < minDiff) {
-            minDiff = diff;
-            bestPosition = baseTarget;
-        }
-    });
-
-    this.targetPosition = bestPosition;
-};
-
-PrizeMachine.finish = function() {
-    this.currentPosition = this.targetPosition;
-    this.updateTrack();
-    this.stopAnimation();
-
+  finish() {
+    this.spinning = false;
     this.audio.spin.pause();
-    this.audio.spin.loop = false;
-    this.audio.spin.currentTime = 0;
-
-    this.state = this.STATE.IDLE;
-    if (this.dom.centerFrame) {
-        this.dom.centerFrame.classList.remove("winner");
-        this.dom.centerFrame.classList.remove("fail");
-    }
 
     if (Number(this.targetPrize.id) === 0) {
-        if (this.dom.centerFrame) this.dom.centerFrame.classList.add("fail");
-        this.audio.fail.currentTime = 0;
-        this.audio.fail.play().catch(() => {});
-        if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "😢 MOST NEM NYERTÉL";
+      this.audio.fail.play().catch(() => {});
+      if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "😢 MOST NEM NYERTÉL";
     } else {
-        if (this.dom.centerFrame) this.dom.centerFrame.classList.add("winner");
-        this.audio.winner.currentTime = 0;
-        this.audio.winner.play().catch(() => {});
-        if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "🎉 NYERTÉL! 🎉";
-        this.startConfetti();
+      this.audio.winner.play().catch(() => {});
+      if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "🎉 NYERTÉL! 🎉";
     }
 
-    if (this.dom.resultPrize) this.dom.resultPrize.innerHTML = this.targetPrize.name;
+    if (this.dom.resultPrize) this.dom.resultPrize.innerText = this.targetPrize.name;
+    if (this.dom.gameButtons) this.dom.gameButtons.classList.remove("hidden");
+  },
 
-    if (this.spinResolve) {
-        this.spinResolve(this.targetPrize);
-        this.spinResolve = null;
-    }
-
-    if (window.AppInventor && window.AppInventor.setWebViewString) {
-        window.AppInventor.setWebViewString(JSON.stringify({
-            event: "winner",
-            id: this.targetPrize.id,
-            name: this.targetPrize.name
-        }));
-    }
-
-    setTimeout(() => {
-        if (this.dom.gameButtons) this.dom.gameButtons.style.display = "flex";
-    }, 3000);
-
-    clearTimeout(this.resetTimer);
-    this.resetTimer = setTimeout(() => {
-        if (window.AppInventor && window.AppInventor.setWebViewString) {
-            window.AppInventor.setWebViewString("BACK");
-        } else {
-            this.resetGame();
-        }
-    }, 15000);
+  resetGame() {
+    document.getElementById("machineContainer").classList.add("hidden");
+    document.getElementById("codeContainer").classList.remove("hidden");
+    document.getElementById("codeInput").disabled = false;
+    document.getElementById("codeInput").value = "";
+    document.getElementById("spinBtn").disabled = false;
+    document.getElementById("btnText").innerText = "PÖRGETÉS";
+    document.getElementById("btnLoader").classList.add("hidden");
+    document.getElementById("codeMessage").innerText = "";
+    if (this.dom.gameButtons) this.dom.gameButtons.classList.add("hidden");
+  }
 };
 
-PrizeMachine.stop = function() {
-    this.stopAnimation();
-    this.audio.spin.pause();
-    this.audio.spin.loop = false;
-    this.currentSpeed = 0;
-    this.state = this.STATE.IDLE;
-};
-
-PrizeMachine.reset = function() {
-    this.stop();
-    this.currentPosition = 0;
-    this.targetPosition = 0;
-    this.targetPrize = null;
-    this.updateTrack();
-    if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "";
-    if (this.dom.resultPrize) this.dom.resultPrize.innerHTML = "";
-};
-
-PrizeMachine.applySettings = function() {
-    const s = this.settings;
-
-    this.settings.repeatCount = Number(s.repeatCount || s["repeatCount"] || 8);
-    this.settings.itemWidth = Number(s.itemWidth || s["itemWidth"] || 180);
-    this.settings.itemGap = Number(s.itemGap || s["itemGap"] || 30);
-    this.settings.maxSpeed = Number(s.maxSpeed || s["maxSpeed"] || 45);
-    this.settings.deceleration = Number(s.deceleration || s["deceleration"] || 3000);
-
-    const spinSec = Number(s["Pörgetési idő (mp)"] || s.spinDuration || 6);
-    this.settings.spinDuration = spinSec * 1000;
-
-    if (s.backgroundImage) {
-        document.body.style.backgroundImage = "url('" + s.backgroundImage + "')";
-        document.body.style.backgroundSize = "cover";
-        document.body.style.backgroundPosition = "center";
-    }
-
-    if (s.logoImage) {
-        const logo = document.getElementById("logo");
-        if (logo) logo.src = s.logoImage;
-    }
-
-    this.log("Beállítások alkalmazva:", this.settings);
-};
-
-PrizeMachine.log = function(...args) {
-    console.log("[PrizeMachine]", ...args);
-};
-
-PrizeMachine.initDOM = function() {
-    this.dom.slotContainer = document.getElementById("slotContainer");
-    this.dom.slotTrack = document.getElementById("slotTrack");
-    this.dom.centerFrame = document.getElementById("centerFrame");
-    this.dom.resultTitle = document.getElementById("resultTitle");
-    this.dom.resultPrize = document.getElementById("resultPrize");
-    this.dom.gameButtons = document.getElementById("gameButtons");
-    this.dom.newCodeBtn = document.getElementById("newCodeBtn");
-};
-
-PrizeMachine.load = async function() {
-    this.log("API betöltés...");
-    const response = await fetch(WEBAPP_URL + "?action=init", { cache: "no-store" });
-    const json = await response.json();
-
-    if (json.status !== "OK") {
-        throw new Error(json.message);
-    }
-
-    this.settings = json.data.settings;
-    this.prizes = json.data.prizes;
-};
-
-PrizeMachine.init = async function() {
-    console.time("INIT");
-    this.initDOM();
-    await this.load();
-    this.applySettings();
-    await this.preloadImages();
-    this.buildReel();
-
-    if (this.dom.newCodeBtn) {
-        this.dom.newCodeBtn.onclick = () => {
-            if (window.AppInventor && window.AppInventor.setWebViewString) {
-                window.AppInventor.setWebViewString("BACK");
-            }
-            this.resetGame();
-        };
-    }
-
-    this.initialized = true;
-    this.log("READY");
-    console.timeEnd("INIT");
-};
-
-PrizeMachine.startConfetti = function() {
-    const container = document.getElementById("confetti");
-    if (!container) return;
-    container.innerHTML = "";
-
-    for (let i = 0; i < 80; i++) {
-        const piece = document.createElement("div");
-        piece.style.position = "absolute";
-        piece.style.width = "10px";
-        piece.style.height = "10px";
-        piece.style.left = Math.random() * 100 + "%";
-        piece.style.top = "-20px";
-        piece.style.background = ["#ff0000", "#00ff00", "#0088ff", "#ffd700", "#ff00ff"][Math.floor(Math.random() * 5)];
-        piece.style.transform = "rotate(" + Math.random() * 360 + "deg)";
-        piece.style.animation = "confettiFall " + (2 + Math.random() * 2) + "s linear";
-        container.appendChild(piece);
-    }
-
-    setTimeout(() => { container.innerHTML = ""; }, 5000);
-};
-
-PrizeMachine.resetGame = function() {
-    this.stop();
-    this.currentPosition = 0;
-    this.targetPosition = 0;
-    this.targetPrize = null;
-    this.updateTrack();
-
-    clearTimeout(this.resetTimer);
-    if (this.dom.gameButtons) this.dom.gameButtons.style.display = "none";
-    if (this.dom.resultTitle) this.dom.resultTitle.innerHTML = "";
-    if (this.dom.resultPrize) this.dom.resultPrize.innerHTML = "";
-    if (this.dom.centerFrame) {
-        this.dom.centerFrame.classList.remove("winner");
-        this.dom.centerFrame.classList.remove("fail");
-    }
-
-    const confetti = document.getElementById("confetti");
-    if (confetti) confetti.innerHTML = "";
-
-    if (window.AppInventor && window.AppInventor.setWebViewString) {
-        window.AppInventor.setWebViewString("BACK");
-    }
-};
-
-/*******************************************************
- * INICIALIZÁLÁS ÉS EVENT HANDLER-EK
- *******************************************************/
+// Eseménykezelők hozzárendelése betöltés után
 document.addEventListener("DOMContentLoaded", () => {
-  if (typeof PrizeMachine !== "undefined" && PrizeMachine.init) {
-    PrizeMachine.init();
-  }
+  PrizeMachine.init();
 
-  const inputEl = document.getElementById("codeInput");
-  const btnEl = document.getElementById("spinBtn");
+  const spinBtn = document.getElementById("spinBtn");
+  const codeInput = document.getElementById("codeInput");
+  const newCodeBtn = document.getElementById("newCodeBtn");
 
-  if (btnEl) {
-    btnEl.onclick = (e) => {
+  if (spinBtn) {
+    spinBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      window.useCode();
-    };
+      handleCodeSubmit();
+    });
   }
 
-  if (inputEl) {
-    inputEl.addEventListener("keypress", (e) => {
+  if (codeInput) {
+    codeInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        window.useCode();
+        handleCodeSubmit();
       }
+    });
+  }
+
+  if (newCodeBtn) {
+    newCodeBtn.addEventListener("click", () => {
+      PrizeMachine.resetGame();
     });
   }
 });
